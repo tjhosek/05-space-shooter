@@ -1,8 +1,10 @@
-import arcade, os
+import arcade, random, os
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 500
 SCREEN_TITLE = "Space Shooter"
+
+MOVEMENT_SPEED = 5
 
 class MyGame(arcade.Window):
     '''Main Application Class'''
@@ -23,7 +25,7 @@ class MyGame(arcade.Window):
         self.player = None
 
     def setup(self):
-        self.platerList = arcade.SpriteList()
+        self.playerList = arcade.SpriteList()
         self.enemyList = arcade.SpriteList()
         self.projectileList = arcade.SpriteList()
 
