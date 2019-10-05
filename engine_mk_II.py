@@ -30,7 +30,7 @@ BULLET_SPEED = (0,10)
 
 # Enemy variables
 ENEMY_SCALE = 2
-ENEMY_HP = 100
+ENEMY_HP = 50
 ENEMY_MOVE_DELAY = 0
 NUM_ENEMIES = 20
 ENEMY_COL_MAX = 10
@@ -71,6 +71,7 @@ class Player(arcade.Sprite):
         self.move_right = False
         self.move_up = False
         self.move_down = False
+        self.hp = CHARACTER_HP
 
     def update(self):
         '''
@@ -86,6 +87,8 @@ class Player(arcade.Sprite):
                 self.center_x = MARGIN + 1
             elif self.center_x >= SCREEN_WIDTH - MARGIN:
                 self.center_x = SCREEN_WIDTH - MARGIN - 1
+        if self.hp <= 0:
+            GAME_STATE = -1
 
 class Enemy(arcade.Sprite):
     def __init__(self, position):
@@ -177,10 +180,24 @@ class Window(arcade.Window):
             if e.hp <= 0:
                 e.kill()
                 self.score += KILL_SCORE
+
+        if not self.enemy_list:
+            GAME_STATE = 1
+
+        playerHit = self.player.collides_with_list(self.enemy_bullet_list)
+        for i in playerHit:
+            self.player.hp -= i.damage
+            i.kill()
+            # if self.player.hp <= 0:
+            #     self.player.kill()
+            #     GAME_STATE = -1
+        
     
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(str(self.score),20,40, open_color.white, 16)
+        arcade.draw_text(f'hp: {str(self.player.hp)}',SCREEN_WIDTH-80,40, open_color.white,16)
+        arcade.draw_text(f'Game State: {str(GAME_STATE)}',SCREEN_WIDTH/2,40, open_color.white,16)
         self.player.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
@@ -204,15 +221,15 @@ class Window(arcade.Window):
 
     def on_key_press(self,key,modifiers):
         if key == arcade.key.A:
-            self.player.move_left = not self.player.move_left
+            self.player.move_left = True
         if key == arcade.key.D:
-            self.player.move_right = not self.player.move_right
+            self.player.move_right = True
     
     def on_key_release(self,key,modifiers):
         if key == arcade.key.A:
-            self.player.move_left = not self.player.move_left
+            self.player.move_left = False
         if key == arcade.key.D:
-            self.player.move_right = not self.player.move_right
+            self.player.move_right = False
 
 def main():
     window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
