@@ -21,6 +21,7 @@ CHARACTER_SPEED = 5
 HIT_SCORE = 10
 KILL_SCORE = 100
 CHARACTER_SCALE = 2
+CHARACTER_HP = 3
 
 # Projectile variables
 BULLET_DAMAGE = 10
@@ -34,13 +35,15 @@ ENEMY_MOVE_DELAY = 0
 NUM_ENEMIES = 20
 ENEMY_COL_MAX = 10
 ENEMY_SPEED = 1
+ENEMY_BULLET_DAMAGE = 1
+BULLET_TO_FIRE = []
 
 class Bullet(arcade.Sprite):
-    def __init__(self, position, velocity, damage):
+    def __init__(self, position, velocity, damage, sprite):
         '''
         Initializes the Bullet
         '''
-        super().__init__("images/character_sprites/flame0.png",BULLET_SCALE)
+        super().__init__(sprite,BULLET_SCALE)
         (self.center_x, self.center_y) = position
         (self.dx, self.dy) = velocity
         self.damage = damage
@@ -94,7 +97,7 @@ class Enemy(arcade.Sprite):
         self.hp = ENEMY_HP
         (self.center_x,self.center_y) = position
         (self.dx, self.dy) = 20,-32
-        self.fire_delay = random.randint(30,120)
+        self.fire_delay = random.randint(3,5)
 
     def update(self):
         '''
@@ -104,6 +107,16 @@ class Enemy(arcade.Sprite):
         if self.center_x +MARGIN >= SCREEN_WIDTH or self.center_x < MARGIN:
             self.center_y += self.dy
             self.dx = -self.dx
+        if self.fire_delay <= 0:
+            x = self.center_x
+            y = self.center_y
+            bullet = Bullet((x,y),(BULLET_SPEED[0],-BULLET_SPEED[1]),ENEMY_BULLET_DAMAGE,"images/enemy.png")
+            self.fire_delay = random.randint(1,5)
+            BULLET_TO_FIRE.append(bullet)
+        else:
+            self.fire_delay -= 1
+
+
         
 
 class Window(arcade.Window):
@@ -115,7 +128,7 @@ class Window(arcade.Window):
 
         self.set_mouse_visible(True)
         self.bullet_list = arcade.SpriteList()
-        self.enemy_bullet_list = arcade.sprite_list()
+        self.enemy_bullet_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.player = Player()
         self.reticle = Reticle()
@@ -142,11 +155,17 @@ class Window(arcade.Window):
         global ENEMY_MOVE_DELAY
         self.player.update()
         self.bullet_list.update()
+        self.enemy_bullet_list.update()
         if ENEMY_MOVE_DELAY <= 0:
             ENEMY_MOVE_DELAY = 30
             self.enemy_list.update()
         else:
             ENEMY_MOVE_DELAY -= 1
+        for i in BULLET_TO_FIRE:
+            self.enemy_bullet_list.append(i)
+            BULLET_TO_FIRE.remove(i)
+        
+        
         # arcade.draw_text(str(enemy_move_delay),100,200,open_color.white,16)
 
         for e in self.enemy_list:
@@ -165,6 +184,7 @@ class Window(arcade.Window):
         self.player.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
+        self.enemy_bullet_list.draw()
         self.reticle.draw()
         
 
@@ -179,7 +199,7 @@ class Window(arcade.Window):
         if button == arcade.MOUSE_BUTTON_LEFT:
             x = self.player.center_x
             y = self.player.center_y
-            bullet = Bullet((x,y),BULLET_SPEED,BULLET_DAMAGE)
+            bullet = Bullet((x,y),BULLET_SPEED,BULLET_DAMAGE,"images/character_sprites/flame0.png")
             self.bullet_list.append(bullet)
 
     def on_key_press(self,key,modifiers):
