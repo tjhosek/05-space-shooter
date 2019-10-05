@@ -17,20 +17,20 @@ GAME_STATE = 0                  # If game state is 0, the game is running, if ga
 
 # Player Variables
 STARTING_LOCATION = (400,100)
-CHARACTER_SPEED = 5
+CHARACTER_SPEED = 7
 HIT_SCORE = 10
 KILL_SCORE = 100
 CHARACTER_SCALE = 2
-CHARACTER_HP = 3
+CHARACTER_HP = 10
 
 # Projectile variables
 BULLET_DAMAGE = 10
 BULLET_SCALE = 1
-BULLET_SPEED = (0,10)
+BULLET_SPEED = 10
 
 # Enemy variables
 ENEMY_SCALE = 2
-ENEMY_HP = 50
+ENEMY_HP = 30
 ENEMY_MOVE_DELAY = 0
 NUM_ENEMIES = 20
 ENEMY_COL_MAX = 10
@@ -87,8 +87,6 @@ class Player(arcade.Sprite):
                 self.center_x = MARGIN + 1
             elif self.center_x >= SCREEN_WIDTH - MARGIN:
                 self.center_x = SCREEN_WIDTH - MARGIN - 1
-        if self.hp <= 0:
-            GAME_STATE = -1
 
 class Enemy(arcade.Sprite):
     def __init__(self, position):
@@ -113,7 +111,7 @@ class Enemy(arcade.Sprite):
         if self.fire_delay <= 0:
             x = self.center_x
             y = self.center_y
-            bullet = Bullet((x,y),(BULLET_SPEED[0],-BULLET_SPEED[1]),ENEMY_BULLET_DAMAGE,"images/enemy.png")
+            bullet = Bullet((x,y),(0,-BULLET_SPEED),ENEMY_BULLET_DAMAGE,"images/enemy.png")
             self.fire_delay = random.randint(1,5)
             BULLET_TO_FIRE.append(bullet)
         else:
@@ -129,7 +127,7 @@ class Window(arcade.Window):
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
 
-        self.set_mouse_visible(True)
+        self.set_mouse_visible(False)
         self.bullet_list = arcade.SpriteList()
         self.enemy_bullet_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
@@ -143,7 +141,7 @@ class Window(arcade.Window):
         '''
         row = 1
         column = 1
-        # Enemies will be spawned in a space invaders style grid,
+        # Enemies will be spawned in a space invaders style grid, and move as such
         for i in range(NUM_ENEMIES):
             if column > ENEMY_COL_MAX:
                 row += 1
@@ -156,68 +154,106 @@ class Window(arcade.Window):
         
     def update(self, delta_time):
         global ENEMY_MOVE_DELAY
-        self.player.update()
-        self.bullet_list.update()
-        self.enemy_bullet_list.update()
-        if ENEMY_MOVE_DELAY <= 0:
-            ENEMY_MOVE_DELAY = 30
-            self.enemy_list.update()
-        else:
-            ENEMY_MOVE_DELAY -= 1
-        for i in BULLET_TO_FIRE:
-            self.enemy_bullet_list.append(i)
-            BULLET_TO_FIRE.remove(i)
-        
-        
-        # arcade.draw_text(str(enemy_move_delay),100,200,open_color.white,16)
+        global GAME_STATE
+        if not GAME_STATE:
+            self.player.update()
+            self.bullet_list.update()
+            self.enemy_bullet_list.update()
+            if ENEMY_MOVE_DELAY <= 0:
+                ENEMY_MOVE_DELAY = 30
+                self.enemy_list.update()
+            else:
+                ENEMY_MOVE_DELAY -= 1
+            for i in BULLET_TO_FIRE:
+                self.enemy_bullet_list.append(i)
+                BULLET_TO_FIRE.remove(i)
 
-        for e in self.enemy_list:
-            collision = e.collides_with_list(self.bullet_list)
-            for i in collision:
-                e.hp -= i.damage
+            for e in self.enemy_list:
+                collision = e.collides_with_list(self.bullet_list)
+                for i in collision:
+                    e.hp -= i.damage
+                    i.kill()
+                    self.score += HIT_SCORE
+                if e.hp <= 0:
+                    e.kill()
+                    self.score += KILL_SCORE
+
+            if not self.enemy_list:
+                GAME_STATE = 1
+
+            playerHit = self.player.collides_with_list(self.enemy_bullet_list)
+            for i in playerHit:
+                self.player.hp -= i.damage
                 i.kill()
-                self.score += HIT_SCORE
-            if e.hp <= 0:
-                e.kill()
-                self.score += KILL_SCORE
+                if self.player.hp <= 0:
+                    self.player.kill()
+                    GAME_STATE = -1
 
-        if not self.enemy_list:
-            GAME_STATE = 1
+    def draw_game_loss(self):
+        '''
+        Draws a game over screen
+        '''
+        arcade.draw_text("You Lose!", SCREEN_WIDTH/2-40,SCREEN_HEIGHT/2,open_color.red_9,20)
+        arcade.draw_text("Press left click to play again.", SCREEN_WIDTH/2-120,SCREEN_HEIGHT/2-40,open_color.white,20)
 
-        playerHit = self.player.collides_with_list(self.enemy_bullet_list)
-        for i in playerHit:
-            self.player.hp -= i.damage
-            i.kill()
-            # if self.player.hp <= 0:
-            #     self.player.kill()
-            #     GAME_STATE = -1
-        
+    def draw_game_won(self):
+        '''
+        Draws a victory screen
+        '''
+        arcade.draw_text("You Win!", SCREEN_WIDTH/2-40,SCREEN_HEIGHT/2,open_color.green_9,20)
+        arcade.draw_text("Press left click to play again.", SCREEN_WIDTH/2-120,SCREEN_HEIGHT/2-40,open_color.white,20)
     
-    def on_draw(self):
-        arcade.start_render()
-        arcade.draw_text(str(self.score),20,40, open_color.white, 16)
+    def draw_game(self):
+        '''
+        Draws the Game
+        '''
+        arcade.draw_text(f'score: {str(self.score)}',20,40, open_color.white, 16)
         arcade.draw_text(f'hp: {str(self.player.hp)}',SCREEN_WIDTH-80,40, open_color.white,16)
-        arcade.draw_text(f'Game State: {str(GAME_STATE)}',SCREEN_WIDTH/2,40, open_color.white,16)
+        # arcade.draw_text(f'Game State: {str(GAME_STATE)}',SCREEN_WIDTH/2,40, open_color.white,16)
         self.player.draw()
         self.bullet_list.draw()
         self.enemy_list.draw()
         self.enemy_bullet_list.draw()
         self.reticle.draw()
+    
+    def on_draw(self):
+        arcade.start_render()
+        if not GAME_STATE:
+            self.draw_game()
+        if GAME_STATE == -1:
+            self.draw_game_loss()
+            self.draw_game()
+        elif GAME_STATE == 1:
+            self.draw_game_won()
+            self.draw_game()
         
 
     def on_mouse_motion(self, x, y, dx, dy):
         '''
         Moves the aiming reticle with the mouse
         '''
-        self.Reticle.center_x = x
-        self.Reticle.center_y = y
+        if y > STARTING_LOCATION[1]:
+            self.reticle.center_y = y
+        self.reticle.center_x = x
 
     def on_mouse_press(self,x,y,button,modifiers):
+        global GAME_STATE
         if button == arcade.MOUSE_BUTTON_LEFT:
-            x = self.player.center_x
-            y = self.player.center_y
-            bullet = Bullet((x,y),BULLET_SPEED,BULLET_DAMAGE,"images/character_sprites/flame0.png")
+            bullet_x = self.player.center_x
+            bullet_y = self.player.center_y
+            pheta = math.atan((y-bullet_y)/(x-bullet_x))
+            dx = int(BULLET_SPEED*math.cos(pheta))
+            dy = int(BULLET_SPEED*math.sin(pheta))
+            if x <= bullet_x:
+                dy = -dy
+                dx = -dx
+
+            bullet = Bullet((bullet_x,bullet_y),(dx,dy),BULLET_DAMAGE,"images/character_sprites/flame0.png")
             self.bullet_list.append(bullet)
+        if GAME_STATE != 0 and button == arcade.MOUSE_BUTTON_LEFT:
+            self.player.hp = CHARACTER_HP
+            GAME_STATE = 0
+            self.setup()
 
     def on_key_press(self,key,modifiers):
         if key == arcade.key.A:
