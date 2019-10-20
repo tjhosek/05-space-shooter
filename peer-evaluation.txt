@@ -1,0 +1,56 @@
+Name: Peyton Conner
+Date: 10/19/19
+Project: Space Shooter
+Peer's repository: https://github.com/peyloading/05-space-shooter-1.git
+
+
+
+What is something you learned by reviewing your peer's project?
+There is a lot more that I could have added instead of how simple mine was. 
+ 
+
+What is something you saw in your peer's project that you would like to apply to your own programming projects?
+I would like to add screen bounds. I didn't have that in my game. 
+ 
+
+What suggestions would you have for your peer to improve his/her code?
+I think that it was very explicit and clear! I wouldn't change anything!
+ 
+
+What could have been clearer or better commented?
+Nothing, there were a lot of comments that explain everything that he was doing. 
+ 
+
+Was there anything in the code that was confusing to you? If so, what?
+The movement and game logic stuff didn't make any sense to me, but maybe I just havent experimented with it enough.
+ 
+
+Does the repository contain an appropriate LICENSE?
+Yes.
+ 
+
+What is something he/she could add to the README.md to make it more descriptive?
+More about the game, I also got an error message whenever I tried to play the game,
+    "& : The term 'C:/Users/narni/AppData/Local/Programs/Python/Python37-3
+2/python.exe' is not recognized as the name of a cmdlet, function, 
+script file, or operable program. Check the spelling of the name, or 
+if a path was included, verify that the path is correct and try 
+again.
+At line:1 char:3
++ & 
+C:/Users/narni/AppData/Local/Programs/Python/Python37-32/python.exe 
+...
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:/Users/narni/...7-3 
+   2/python.exe:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException"
+
+
+I'm not sure if I did something wrong or not, but maybe if there was something I needed to download it would have been nice to have
+it in the readme. If its just my personal incompetence I'm sorry! 
+ 
+
+Pay a compliment to your peer based on the quality of his/her code.
+It's very indepth and much more complex than anything I came up with! Good job with the comments and going above and beyond in the coding aspect of this assignment!
+
